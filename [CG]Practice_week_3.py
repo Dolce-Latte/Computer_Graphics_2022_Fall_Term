@@ -83,7 +83,10 @@ def gaussian_2D_filtering(filter_size, sigma):
     """
     y, x = np.mgrid[-(filter_size // 2):(filter_size // 2) + 1, -(filter_size // 2):(filter_size // 2) + 1]
 
-    return None
+    gausian2D = (1 / (2 * np.pi * (sigma ** 2))) * np.exp(-(x ** 2 + y ** 2) / (2 * sigma ** 2))
+    gausian2D = gausian2D / np.sum(gausian2D)
+
+    return gausian2D
 
 def gaussian_1D_filtering(filter_size, sigma):
     """
@@ -94,7 +97,11 @@ def gaussian_1D_filtering(filter_size, sigma):
         :return: Gaussian 1D Filter Mask
     """
     x = np.full((1, filter_size), [range(-(filter_size // 2), (filter_size // 2) + 1)])
-    return None
+
+    gausian1D = (1 / (np.sqrt(2 * np.pi) * sigma)) * np.exp(-(x ** 2) / (2 * (sigma ** 2)))
+    gausian1D = gausian1D / np.sum(gausian1D)
+    
+    return gausian1D
 
 def show_image(src, image_name):
     cv2.imshow(image_name, src)
