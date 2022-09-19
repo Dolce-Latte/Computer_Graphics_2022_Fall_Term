@@ -9,7 +9,17 @@ def filtering_to_library(src, divide_number, mode='average'):
     :param src: original image
     :return: filtering 된 image 반환
     """
-    return None
+    if mode == 'average':
+        kernel = np.ones((3, 3), np.float32)/divide_number
+    elif mode == 'sharpening':
+        kernel = np.ones((3, 3), np.float32)/9
+        mask = np.array([[0, 0, 0],
+                         [0, 2, 0],
+                         [0, 0, 0]])
+        kernel = mask - kernel
+
+    dst = cv2.filter2D(src, -1, kernel)
+    return dst
 
 def my_padding(src, pad_shape, pad_type = 'zero'):
     """
@@ -19,8 +29,25 @@ def my_padding(src, pad_shape, pad_type = 'zero'):
     :param pad_type: 'zero' or 'repetition'
     :return:
     """
+    (h, w) = src.shape
+    (p_h, p_w) = pad_shape
+    pad_img = np.zeros((h + 2 * p_h, w + 2 * p_w), dtype='uint8')
+    pad_img[p_h:h + p_h, p_w:w + p_w] = src
 
-    return None
+    if pad_type == 'repetition':
+        print('repetition padding')
+        #up
+        pad_img[:p_h, p_w:p_w + w] = src[0, :]
+        #down
+        pad_img[p_h + h:, p_w:p_w + w] = src[h - 1:]
+        #left
+        pad_img[:, :p_w] = pad_img[:, p_w:p_w + 1]
+        #right
+        pad_img[:, p_w + w:] = pad_img[:, p_w + w - 1:p_w + w]
+    else:
+        print('zero padding')
+
+    return pad_img
 
 def practice_image_filtering(src, kernel):
     """
@@ -30,11 +57,21 @@ def practice_image_filtering(src, kernel):
     :return: filtering image
     """
 
+    (h, w) = src.shape
+    (k_h, k_w) = kernel.shape
+    pad_img = my_padding(src, (k_h, k_w)) #The parameters here are different from before
+    dst = np.zeros((h, w)) #output
+
     # First Four iteration code
-
     # Second using Numpy slicing
+    for i in range(h):
+        for j in range(w):
+            filtered = min(255, np.sum(pad_img[i:i + k_h, j:j + k_w] * kernel))
+            filtered = max(0, filtered)
+            dst[i, j] = filtered
+    dst = (dst + 0.5).astype(np.uint8)
 
-    return None
+    return dst
 
 def gaussian_2D_filtering(filter_size, sigma):
     """
